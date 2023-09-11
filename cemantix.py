@@ -46,35 +46,33 @@ def get_similar_words(model, target_word):
         return []
 
 
-def submitWords(words, attempts=0):
-    if attempts >= 3:
-        return  # Arrête la récursion après 3 tentatives sans mots valides
+def submitWords(words,saved,count=0):
 
     time.sleep(5)
     for u in words:
-        guess = wdw(driver, 15).until(ec.element_to_be_clickable((By.CLASS_NAME, 'guess')))
+        guess=wdw(driver,15).until(ec.element_to_be_clickable((By.CLASS_NAME,'guess')))
         guess.clear()
         guess.send_keys(u)
-        wdw(driver, 15).until(ec.element_to_be_clickable((By.CLASS_NAME, "guess-btn"))).click()
+        wdw(driver,15).until(ec.element_to_be_clickable((By.CLASS_NAME,"guess-btn"))).click()
 
+        
     div = wdw(driver, 10).until(ec.presence_of_all_elements_located((By.XPATH, "//tbody[@class='guesses']/tr")))
+    great_word = div[0].find_elements(By.XPATH,'//td[@class="word close"]')
     
-    great_word = div[0].find_elements(By.XPATH, '//td[@class="word close"]')
-    target_word = great_word[0].text
-    
-    # Vérifier si le mot cible apparaît plus de 3 fois dans div[1]
-    div1 = div[1].find_elements(By.XPATH, '//td[@class="word close"]')
-    count = 0
-    for word_element in div1:
-        if word_element.text == target_word:
-            count += 1
+    target_word=great_word[0].text
 
-    if count >= 3:
-        great_word = div[1].find_elements(By.XPATH, '//td[@class="word close"]')  # Changer la source de great_word
-        submitWords(words, attempts + 1)  # Réessaie avec le mot de div[1]
-    else:
-        new_list = get_similar_words(model, target_word)
-        submitWords(new_list)
+    if saved==target_word:
+        print("target revenue",target_word)
+        count+=1
+    if count > 4:
+        great_word = div[1].find_elements(By.XPATH,'//td[@class="word close"]')
+    
+        target_word=great_word[0].text
+        print("target new",target_word)
+
+    new_list=get_similar_words(model,target_word)
+    while True:
+        submitWords(new_list,saved)
 
    
 model_path = "frWac_no_postag_no_phrase_700_skip_cut50.bin"
@@ -86,4 +84,4 @@ driver= webdriver.Chrome('chromedriver.exe')
 driver.get('https://cemantix.certitudes.org/')
 
 wdw(driver,15).until(ec.element_to_be_clickable((By.ID,"dialog-close"))).click()
-submitWords(l)
+submitWords(l,'any')
