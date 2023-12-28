@@ -50,54 +50,65 @@ def get_similar_words(model, target_word):
         return []
 
 
-def getMaxIndex(div):
-    great_number=[]
-    great=[]
-    for i in div:
-        time.sleep(2)
-        great_number.append(i.find_elements(By.XPATH,'//td[@class="number  "]'))
-    for i in range(len(div)*2 -1 ):
-        great.append(great_number[0][i].text)
-
-    great = [locale.atof(x) for x in great if x !='' ]
-    
-    return great.index(max(great))
 
 
-def submitWords(words,saved,count=0):
 
+def submitWords(words, saved, count=0):
     time.sleep(5)
+    
     for u in words:
-        guess=wdw(driver,15).until(ec.element_to_be_clickable((By.CLASS_NAME,'guess')))
+        guess = wdw(driver, 15).until(ec.element_to_be_clickable((By.CLASS_NAME, 'guess')))
         guess.clear()
         guess.send_keys(u)
-        wdw(driver,15).until(ec.element_to_be_clickable((By.CLASS_NAME,"guess-btn"))).click()
+        wdw(driver, 15).until(ec.element_to_be_clickable((By.CLASS_NAME, "guess-btn"))).click()
 
-        
     div = wdw(driver, 15).until(ec.presence_of_all_elements_located((By.XPATH, "//tbody[@class='guesses']/tr")))
     
-    time.sleep(3)
+    great_word = []
 
-    index=getMaxIndex(div)
+    for i in div:
+        try:
+            element = driver.find_element(By.XPATH, '//td[@class="word close"]')
+            great_word.append(element.text)
+        except NoSuchElementException:
+            try:
+                element = driver.find_element(By.XPATH, '//td[@class="close word "]')
+                great_word.append(element.text)
+            except NoSuchElementException:
+                try:
+                   
+                    element = driver.find_element(By.XPATH, '//td[@class="c"]')
+
+                    great_word.append(element.text)
+                except NoSuchElementException:
+                    print("Neither 'c' nor 'close word' class found.")
     
-    great_word = div[index].find_elements(By.XPATH,'//td[@class="word "]')
+    if not great_word:
+        print("No matching elements found.")
+        return
+
+    target_word = great_word[0]
     
-    target_word=great_word[0].text
     
-    print("great_word:",target_word)
-    if saved==target_word:
-        print("target revenue",target_word)
-        count+=1
+    if saved == target_word:
+        
+        count += 1
+    
     if count > 4:
-        great_word = div[1].find_elements(By.XPATH,'//td[@class="word "]')
-    
-        target_word=great_word[0].text
-        print("target new",target_word)
+        try:
+            great_word = div[1].find_elements(By.XPATH, '//td[@class="word "]')
+            target_word = great_word[0].text
+            print("target new", target_word)
+        except (NoSuchElementException, StaleElementReferenceException):
+            print("Failed to find new target word.")
+            return
 
-    new_list=get_similar_words(model,target_word)
-    saved=target_word
-    while True:
-        submitWords(new_list,saved)
+    new_list = get_similar_words(model, target_word)
+    saved = target_word
+
+
+    submitWords(new_list, saved, count)
+
 
    
 model_path = "frWac_no_postag_no_phrase_700_skip_cut50.bin"
