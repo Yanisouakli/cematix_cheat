@@ -1,0 +1,7 @@
+numpy
+pandas
+nltk
+gensim
+spacy
+selenium
+scipy
