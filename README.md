@@ -23,3 +23,11 @@ This script is designed to assist with the Cymantix game by automatically provid
 1. Clone the repository:
    ```bash
    git clone https://github.com/Yanisouakli/cematix_cheat.git
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+
+1. Run the script:
+   ```bash
+   py cemantix.py      
